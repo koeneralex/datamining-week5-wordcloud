@@ -1,0 +1,140 @@
+---
+title: 'Week 5: Lab - Word Cloud Chapter Challenge'
+author: "Alex Koener"
+date: "2/14/21"
+output:
+  word_document: default
+  html_document: default
+---
+
+---
+
+# Instructions
+Create a word cloud using the `text` column from a real twitter dataset 
+(sample.csv).
+
+---
+
+```{r setup, message = FALSE}
+# Add your library below.
+
+library(dplyr)
+library(tm)
+library(wordcloud)
+
+```
+
+# Step 1. Load and Clean the Data
+Load in the `sample.csv` dataset from this project's data folder. 
+Please make sure you transform the document to lowercase, delete stopwords & numbers & punctuation (1 point).
+
+```{r, "Step 1"}
+# Write your code below.
+
+## Read twitter data file then examine.
+csv <- read.csv("data/sample.csv", stringsAsFactors = F)
+#str(text)
+
+## Create df for the tweets.
+text <- csv$text
+
+## Put tweets into a vector then examine.
+words_vec <- VectorSource(text)
+#head(words_vec)
+
+## Put tweets in vector into a corpus then examine.
+words_corpus <- Corpus(words_vec)
+#words_corpus
+#words_corpus[[1]]
+#words_corpus[[1]][1]
+
+## Clean the corpus then examine.
+words_corpus <- tm_map(words_corpus, content_transformer(tolower))
+words_corpus <- tm_map(words_corpus, removePunctuation)
+words_corpus <- tm_map(words_corpus, removeNumbers)
+words_corpus <- tm_map(words_corpus, removeWords, stopwords("english"))
+#words_corpus
+#words_corpus[[1]]
+#words_corpus[[1]][1]
+
+## Create TDM, matrix, word counts; then order the words in decreasing order.
+words_tdm <- TermDocumentMatrix(words_corpus)
+words_m <- as.matrix(words_tdm)
+wordCounts <- rowSums(words_m)
+wordCounts <- sort(wordCounts, decreasing = T)
+#head(wordCounts)
+
+
+### Plot wordcloud
+wordcloud(names(wordCounts), wordCounts, max.words = 25)
+
+```
+
+---
+
+# Step 2. Adjust the Stopwords
+Add "can" and "just" to the stopwords list (1 point). 
+
+```{r, "Step 2"}
+# Write your code below.
+
+## Create stop vector for english stopwords and new stopwords.
+stops <- c(stopwords("en"),"can","just", "virginamerica") # Added flights twitter handle (@).
+#str(stops)
+
+## Update wordcloud data.
+words_corpus <- tm_map(words_corpus, removeWords, stops)
+words_tdm <- TermDocumentMatrix(words_corpus)
+words_m <- as.matrix(words_tdm)
+wordCounts <- rowSums(words_m)
+wordCounts <- sort(wordCounts, decreasing = T)
+
+## Plot wordcloud again.
+wordcloud(names(wordCounts), wordCounts, max.words = 25)
+
+```
+
+---
+
+# Step 3. Adjust the Theme
+Use five colors and "Accent" for color theme (1 point).
+
+```{r, "Step 3"}
+# Write your code below.
+
+## Add color to word cloud.
+wordcloud(names(wordCounts), wordCounts, max.words = 25, colors=brewer.pal(5, "Accent"))
+
+
+```
+
+---
+
+# Step 4. Analysis
+Does the word cloud convey the key points of the document? (1 point). 
+
+
+> When completing the lab by the instructions orginially, a small wordcloud that only had 1 or 2 colors was the result. This wordcloud did not give any insight because all the words had virtually the same size and color, no way to distinguish between each.
+
+> After addding "virginamerica" to my stopword vector (~ line 80), I could eaily see the rest of the words that were over shadowed within the tweets.
+
+> Once we achieved the final word cloud, it's no suprise that 'flight' was the most frequent word used, and some runner-ups being 'thanks', 'website', and 'help'. This word cloud made it very easy for us to understand the word frequencies and how they differ.
+
+---
+
+# Step 5. Compile
+Submit the compiled file. 
+The wordcloud may prevent you from compiling. If so, do the following: 
+
+```
+jpeg('p1.jpg')  
+wordcloud(cloudFrame.t$word, cloudFrame.t$freq)  
+dev.off()
+```
+This will make the graphs save in the current working directory. 
+
+```{r, "Step 5"}
+# Write your code below, if necessary.
+
+
+```
